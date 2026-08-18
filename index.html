@@ -102,6 +102,30 @@
     border-radius:999px; padding:4px 11px; font-size:.75rem; font-weight:600;
   }
 
+  /* ---- קרן השתלמות, בתוך כרטיס הברוטו ---- */
+  .fund{
+    margin:20px -16px -24px; padding:14px 16px 18px;
+    background:rgba(0,0,0,.17); border-top:1px solid rgba(255,255,255,.18);
+  }
+  .fund-h{
+    display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center;
+    gap:4px 8px; font-size:.79rem; font-weight:700; margin-bottom:11px;
+  }
+  .fund-base{font-weight:400; opacity:.75; font-size:.74rem}
+  .fund-g{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  .fc{
+    display:flex; flex-direction:column; gap:3px; align-items:center;
+    padding:8px 4px; border-radius:10px; background:rgba(255,255,255,.09);
+  }
+  .fc .k{font-size:.7rem; opacity:.82; line-height:1.25; font-weight:600}
+  .fc .v{
+    font-size:.95rem; font-weight:700; font-variant-numeric:tabular-nums;
+    direction:ltr; unicode-bidi:isolate; white-space:nowrap;
+  }
+  .fc.tot{background:rgba(255,255,255,.2); box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
+  .fc.tot .v{font-weight:800}
+  @media (max-width:400px){ .fc{padding:8px 2px} .fc .v{font-size:.8rem} .fc .k{font-size:.66rem} }
+
   .rows{display:flex; flex-direction:column}
   .row{display:flex; align-items:baseline; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line)}
   .row:last-child{border-bottom:none}
@@ -233,6 +257,18 @@
       <span class="chip" id="chipHours"></span>
       <span class="chip" id="chipYearly"></span>
     </div>
+
+    <div class="fund">
+      <div class="fund-h">
+        <span>קרן השתלמות</span>
+        <span class="fund-base" id="fundBase"></span>
+      </div>
+      <div class="fund-g">
+        <div class="fc"><span class="k">הפרשת עובד<br>2.5%</span><span class="v" id="fundEmp"></span></div>
+        <div class="fc"><span class="k">הפרשת מעסיק<br>7.5%</span><span class="v" id="fundEmr"></span></div>
+        <div class="fc tot"><span class="k">סך ההפרשה<br>10%</span><span class="v" id="fundTot"></span></div>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -276,6 +312,7 @@
       <li>המודל מניח <b>10 משמרות בחודש</b> ומתעלם מאורך החודש (28/29/30/31 ימים) ומחגים.</li>
       <li>אין רכיבי כוננות, שעות נוספות מעבר לגלגל, ביגוד, הבראה, נסיעות או תוספת משפחה.</li>
       <li>הפרמיה על שישי ושבת מגולמת בשעות המזוכות לכל משמרת, לא באחוז התעריף.</li>
+      <li>קרן ההשתלמות אינה חלק מהברוטו: חלק העובד (2.5%) יורד מהשכר, וחלק המעסיק (7.5%) נוסף מעליו.</li>
     </ul>
   </div>
 
@@ -296,12 +333,15 @@
   var SHIFTS_PER_MONTH = 10;
 
   var ROLES = [
-    { name:"לוחם אש",          pct:0.00 },
-    { name:"סגן מפקד צוות",    pct:0.04 },
-    { name:"מפקד צוות",        pct:0.09 },
-    { name:"קצין משנה במשמרת", pct:0.15 },
-    { name:"קצין ראשי במשמרת", pct:0.20 }
+    { name:"לוחם אש",                  pct:0.00 },
+    { name:"סגן מפקד צוות",            pct:0.04 },
+    { name:"מפקד צוות",                pct:0.09 },
+    { name:"סגן מפקד משמרת ומקביליו",  pct:0.15 },
+    { name:"מפקד משמרת",               pct:0.20 }
   ];
+
+  /* קרן השתלמות — מחושבת על השכר המשולב, ללא תוספת הגלגל */
+  var FUND_EMPLOYEE = 0.025, FUND_EMPLOYER = 0.075;
 
   /* שעות מזוכות לכל סוג משמרת */
   var SHIFT_TYPES = [
@@ -356,10 +396,17 @@
     var hourly      = combined / MONTHLY_STANDARD;
     var wheelAmount = hourly * wheelHours;
 
+    /* קרן השתלמות מחושבת על השכר המשולב בלבד — תוספת הגלגל אינה מבוטחת.
+       כל רכיב מעוגל לאגורות והסך נגזר מהם, כדי שהמוצג תמיד יסתכם. */
+    var fundEmployee = round2(combined * FUND_EMPLOYEE);
+    var fundEmployer = round2(combined * FUND_EMPLOYER);
+
     return {
       senFactor:senFactor, matmid:matmid, totalFactor:totalFactor,
       baseUpdated:baseUpdated, roleAmount:roleAmount, combined:combined,
-      hourly:hourly, wheelAmount:wheelAmount, gross:combined + wheelAmount
+      hourly:hourly, wheelAmount:wheelAmount, gross:combined + wheelAmount,
+      fundEmployee:fundEmployee, fundEmployer:fundEmployer,
+      fundTotal:fundEmployee + fundEmployer
     };
   }
 
@@ -465,6 +512,12 @@
     $("chipHourly").textContent = "ערך שעה " + nis2.format(r.hourly);
     $("chipHours").textContent  = num2.format(day.hours) + " שעות גלגל";
     $("chipYearly").textContent = "שנתי ≈ " + nis0.format(r.gross * 12);
+
+    $("fundBase").textContent = "על בסיס שכר משולב " + nis0.format(r.combined) + " · ללא הגלגל";
+    /* שתי ספרות כדי שהחלקים יסתכמו בדיוק בסך — עיגול לשקלים יוצר סתירה גלויה */
+    $("fundEmp").textContent  = nis2.format(r.fundEmployee);
+    $("fundEmr").textContent  = nis2.format(r.fundEmployer);
+    $("fundTot").textContent  = nis2.format(r.fundTotal);
 
     var y1 = Math.min(years, RATE_BREAK), y2 = Math.max(0, years - RATE_BREAK);
     var senSub = y2 > 0
