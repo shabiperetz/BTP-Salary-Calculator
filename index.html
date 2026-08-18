@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8f1d14">
+<title>סימולטור שכר כבאי · בט"ף</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --surface:#ffffff; --surface-2:#fafafa; --line:#e3e5ea;
+    --text:#15171c; --muted:#6b7280; --faint:#9aa0ab;
+    --accent:#a3231a; --accent-soft:#fdecea;
+    --gold:#8a6212; --gold-soft:#fdf4e0;
+    --hero-a:#8f1d14; --hero-b:#c2410c;
+    --shadow:0 1px 2px rgba(16,20,30,.05),0 8px 24px -12px rgba(16,20,30,.18);
+    --r:16px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1014; --surface:#171a20; --surface-2:#1d2027; --line:#2a2e37;
+      --text:#eceef2; --muted:#9aa2b1; --faint:#6b7280;
+      --accent:#f0705f; --accent-soft:#2a1714;
+      --gold:#e0b054; --gold-soft:#2a2213;
+      --hero-a:#7c1a12; --hero-b:#9a3412;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1014; --surface:#171a20; --surface-2:#1d2027; --line:#2a2e37;
+    --text:#eceef2; --muted:#9aa2b1; --faint:#6b7280;
+    --accent:#f0705f; --accent-soft:#2a1714;
+    --gold:#e0b054; --gold-soft:#2a2213;
+    --hero-a:#7c1a12; --hero-b:#9a3412;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"Segoe UI",Rubik,Arial,system-ui,sans-serif;
+    font-size:16px; line-height:1.5;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:16px 16px 48px}
+
+  header{padding:22px 4px 18px}
+  h1{margin:0; font-size:1.32rem; font-weight:700; letter-spacing:-.01em}
+  .sub{margin:5px 0 0; color:var(--muted); font-size:.86rem}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--r); box-shadow:var(--shadow);
+    margin-bottom:14px; overflow:hidden;
+  }
+  .card-h{
+    padding:13px 16px; border-bottom:1px solid var(--line);
+    font-size:.76rem; font-weight:700; letter-spacing:.05em;
+    color:var(--muted); text-transform:uppercase;
+  }
+  .card-b{padding:16px}
+
+  .field{margin-bottom:15px}
+  .field:last-child{margin-bottom:0}
+  label{display:block; font-size:.82rem; font-weight:600; color:var(--muted); margin-bottom:6px}
+  .hint{font-weight:400; color:var(--faint); font-size:.76rem}
+  input[type=number],select,input[type=month]{
+    width:100%; padding:12px 13px; font-size:1rem; font-family:inherit;
+    color:var(--text); background:var(--surface-2);
+    border:1px solid var(--line); border-radius:11px;
+    min-height:48px; appearance:none; -webkit-appearance:none;
+  }
+  input[type=number]{font-variant-numeric:tabular-nums; font-weight:600}
+  select{
+    background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%236b7280' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position:left 14px center;
+    background-repeat:no-repeat;
+    padding-left:38px;
+  }
+  input:focus,select:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:transparent}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  @media (max-width:420px){ .two{grid-template-columns:1fr} }
+
+  .hero{
+    background:linear-gradient(135deg,var(--hero-a),var(--hero-b));
+    color:#fff; border:none; text-align:center; padding:26px 16px 24px;
+  }
+  .hero .lbl{font-size:.78rem; opacity:.82; letter-spacing:.08em; font-weight:600}
+  .hero .big{
+    font-size:2.7rem; font-weight:800; margin:6px 0 2px;
+    font-variant-numeric:tabular-nums; letter-spacing:-.02em; line-height:1.05;
+  }
+  @media (max-width:380px){ .hero .big{font-size:2.25rem} }
+  .hero .note{font-size:.78rem; opacity:.8}
+  .hero .chips{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:14px}
+  .chip{
+    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.22);
+    border-radius:999px; padding:4px 11px; font-size:.75rem; font-weight:600;
+  }
+
+  .rows{display:flex; flex-direction:column}
+  .row{display:flex; align-items:baseline; gap:10px; padding:10px 0; border-bottom:1px dashed var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .nm{flex:1; min-width:0; font-size:.9rem}
+  .row .nm small{display:block; color:var(--faint); font-size:.73rem; font-weight:400; line-height:1.35; margin-top:1px}
+  .row .vl{
+    font-variant-numeric:tabular-nums; font-weight:600; font-size:.95rem;
+    white-space:nowrap; direction:ltr; unicode-bidi:isolate;
+  }
+  .row.total{border-top:2px solid var(--accent); border-bottom:none; margin-top:6px; padding-top:12px}
+  .row.total .nm{font-weight:700; font-size:1rem}
+  .row.total .vl{font-weight:800; font-size:1.15rem; color:var(--accent)}
+  .row.sum{background:var(--surface-2); margin:4px -16px; padding:10px 16px; border-bottom:none}
+  .row.sum .nm{font-weight:700}
+  .row.sum .vl{font-weight:700}
+  .row.hl .vl{color:var(--gold)}
+  .row.off{opacity:.45}
+
+  .tscroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{width:100%; border-collapse:collapse; font-size:.87rem; min-width:340px}
+  th,td{padding:10px 12px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap}
+  th{
+    font-size:.72rem; color:var(--muted); font-weight:700; letter-spacing:.03em;
+    background:var(--surface-2);
+  }
+  td.num{font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; text-align:left}
+  tbody tr:last-child td{border-bottom:none}
+  tr.active{background:var(--accent-soft)}
+  tr.active td{font-weight:700; color:var(--accent)}
+  tr.active td:first-child::before{content:"\25CF  "; font-size:.7em; vertical-align:middle}
+  .delta{font-size:.78rem; color:var(--muted); font-weight:500}
+  .delta.pos{color:var(--gold)}
+
+  .note-box{
+    background:var(--gold-soft); border:1px solid var(--line);
+    border-radius:var(--r); padding:14px 16px; font-size:.8rem;
+    color:var(--muted); line-height:1.6;
+  }
+  .note-box b{color:var(--text)}
+  .note-box ul{margin:8px 0 0; padding-inline-start:18px}
+  .note-box li{margin-bottom:5px}
+  footer{text-align:center; color:var(--faint); font-size:.74rem; margin-top:18px; line-height:1.7}
+
+  header{display:flex; align-items:flex-start; justify-content:space-between; gap:12px}
+  .themebtn{
+    flex:none; width:42px; height:42px; border-radius:50%; cursor:pointer;
+    background:var(--surface); border:1px solid var(--line);
+    color:var(--muted); font-size:1.05rem; box-shadow:var(--shadow);
+    display:grid; place-items:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>סימולטור שכר כבאי</h1>
+      <p class="sub">חישוב שכר ברוטו חודשי · בטיחות ומניעת שריפות</p>
+    </div>
+    <button class="themebtn" id="themebtn" aria-label="החלף בין מצב בהיר לכהה">&#9686;</button>
+  </header>
+
+  <div class="card">
+    <div class="card-h">נתוני קלט</div>
+    <div class="card-b">
+      <div class="two">
+        <div class="field">
+          <label for="base">שכר בסיס יסוד <span class="hint">(₪)</span></label>
+          <input type="number" id="base" value="9000" min="0" step="100" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="years">שנות ותק</label>
+          <input type="number" id="years" value="18" min="0" max="45" step="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="role">תפקיד</label>
+        <select id="role"></select>
+      </div>
+
+      <div class="two">
+        <div class="field">
+          <label for="day">יום תחילת החודש</label>
+          <select id="day"></select>
+        </div>
+        <div class="field">
+          <label for="month">בחירת חודש <span class="hint">(אופציונלי)</span></label>
+          <input type="month" id="month">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hero">
+    <div class="lbl">סך שכר ברוטו חודשי</div>
+    <div class="big" id="gross">&#8362;0</div>
+    <div class="note" id="grossNote"></div>
+    <div class="chips">
+      <span class="chip" id="chipHourly"></span>
+      <span class="chip" id="chipHours"></span>
+      <span class="chip" id="chipYearly"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">פירוט החישוב</div>
+    <div class="card-b">
+      <div class="rows" id="rows"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">השוואה לפי יום תחילת החודש</div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th>יום</th>
+            <th style="text-align:left">שעות גלגל</th>
+            <th style="text-align:left">תוספת גלגל</th>
+            <th style="text-align:left">סה&#8221;כ ברוטו</th>
+          </tr>
+        </thead>
+        <tbody id="cmp"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <b>מה הסימולטור לא כולל</b>
+    <ul>
+      <li>זהו חישוב <b>ברוטו בלבד</b> — ללא מס הכנסה, ביטוח לאומי, מס בריאות והפרשות פנסיה.</li>
+      <li>שעות הגלגל מחושבות כולן בתעריף שעה בסיסי (100%), ללא פיצול ל־125%/150%, לילה או שבת וחג.</li>
+      <li>טבלת שעות הגלגל תלויה ביום פתיחת החודש בלבד ואינה מתחשבת באורך החודש (28/29/30/31 ימים).</li>
+      <li>אין רכיבי כוננות, שעות נוספות, ביגוד, הבראה, נסיעות או תוספת משפחה.</li>
+    </ul>
+  </div>
+
+  <footer>
+    הערכה בלבד — אינה מהווה תלוש שכר או מסמך מחייב.<br>
+    מודל החישוב: 1% ריבית דריבית לכל שנת ותק, 0.75% משנה 30, ותוספת מתמיד 2% מ־18 שנות ותק.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===== קבועים ===== */
+  var MONTHLY_STANDARD = 173.3;                          // תקן שעות חודשי במשק
+  var MATMID_YEARS = 18, MATMID_RATE = 0.02;             // תוספת מתמיד
+  var RATE_1 = 0.01, RATE_2 = 0.0075, RATE_BREAK = 29;   // ותק: 1% עד שנה 29, 0.75% משנה 30
+
+  var ROLES = [
+    { name:"לוחם אש",          pct:0.00 },
+    { name:"סגן מפקד צוות",    pct:0.04 },
+    { name:"מפקד צוות",        pct:0.09 },
+    { name:"קצין משנה במשמרת", pct:0.15 },
+    { name:"קצין ראשי במשמרת", pct:0.20 }
+  ];
+
+  var DAYS = [
+    { name:"ראשון", hours:181.99 },
+    { name:"שני",   hours:142.49 },
+    { name:"שלישי", hours:149.36 },
+    { name:"רביעי", hours:181.99 },
+    { name:"חמישי", hours:149.02 },
+    { name:"שישי",  hours:155.89 },
+    { name:"שבת",   hours:188.86 }
+  ];
+
+  /* ===== עיצוב מספרים ===== */
+  var nis0 = new Intl.NumberFormat("he-IL",{style:"currency",currency:"ILS",maximumFractionDigits:0});
+  var nis2 = new Intl.NumberFormat("he-IL",{style:"currency",currency:"ILS",minimumFractionDigits:2,maximumFractionDigits:2});
+  var num2 = new Intl.NumberFormat("he-IL",{minimumFractionDigits:2,maximumFractionDigits:2});
+  var num4 = new Intl.NumberFormat("he-IL",{minimumFractionDigits:4,maximumFractionDigits:4});
+
+  /* ===== מנוע החישוב ===== */
+  function seniorityFactor(years){
+    var y = Math.max(0, years);
+    var a = Math.min(y, RATE_BREAK);       // שנים בשיעור 1%
+    var b = Math.max(0, y - RATE_BREAK);   // שנים בשיעור 0.75%
+    return Math.pow(1 + RATE_1, a) * Math.pow(1 + RATE_2, b);
+  }
+
+  function calc(base, years, rolePct, wheelHours){
+    var senFactor   = seniorityFactor(years);
+    var matmid      = years >= MATMID_YEARS;
+    var totalFactor = senFactor * (matmid ? 1 + MATMID_RATE : 1);
+
+    var baseUpdated = base * totalFactor;
+    var roleAmount  = baseUpdated * rolePct;
+    var combined    = baseUpdated + roleAmount;      // שכר משולב
+    var hourly      = combined / MONTHLY_STANDARD;
+    var wheelAmount = hourly * wheelHours;
+
+    return {
+      senFactor:senFactor, matmid:matmid, totalFactor:totalFactor,
+      baseUpdated:baseUpdated, roleAmount:roleAmount, combined:combined,
+      hourly:hourly, wheelAmount:wheelAmount, gross:combined + wheelAmount
+    };
+  }
+
+  /* ===== DOM ===== */
+  function $(id){ return document.getElementById(id); }
+  var elBase = $("base"), elYears = $("years"), elRole = $("role"),
+      elDay  = $("day"),  elMonth = $("month");
+
+  ROLES.forEach(function(r, i){
+    var o = document.createElement("option");
+    o.value = i;
+    o.textContent = r.name + (r.pct ? "  ·  +" + Math.round(r.pct * 100) + "%" : "");
+    elRole.appendChild(o);
+  });
+  DAYS.forEach(function(d, i){
+    var o = document.createElement("option");
+    o.value = i;
+    o.textContent = d.name + "  ·  " + num2.format(d.hours) + " ש׳";
+    elDay.appendChild(o);
+  });
+  elRole.value = 1;   // סגן מפקד צוות — ברירת המחדל של הקובץ המקורי
+  elDay.value  = 6;   // שבת
+
+  /* "שנה אחת" / "2 שנים" — ריבוי תקין בעברית */
+  function yrs(n){
+    if(n === 1) return "שנה אחת";
+    if(n === 2) return "שנתיים";
+    return n + " שנים";
+  }
+
+  function row(name, sub, value, cls){
+    var d = document.createElement("div");
+    d.className = "row" + (cls ? " " + cls : "");
+    var n = document.createElement("div"); n.className = "nm"; n.textContent = name;
+    if(sub){
+      var s = document.createElement("small"); s.textContent = sub; n.appendChild(s);
+    }
+    var v = document.createElement("div"); v.className = "vl"; v.textContent = value;
+    d.appendChild(n); d.appendChild(v);
+    return d;
+  }
+
+  function render(){
+    var base  = Math.max(0, parseFloat(elBase.value)  || 0);
+    var years = Math.max(0, parseFloat(elYears.value) || 0);
+    var role  = ROLES[+elRole.value] || ROLES[0];
+    var dayIx = +elDay.value;
+    var day   = DAYS[dayIx] || DAYS[0];
+    var r     = calc(base, years, role.pct, day.hours);
+
+    $("gross").textContent      = nis0.format(r.gross);
+    $("grossNote").textContent  = role.name + " · " + years + " שנות ותק · חודש שנפתח ביום " + day.name;
+    $("chipHourly").textContent = "ערך שעה " + nis2.format(r.hourly);
+    $("chipHours").textContent  = num2.format(day.hours) + " שעות גלגל";
+    $("chipYearly").textContent = "שנתי ≈ " + nis0.format(r.gross * 12);
+
+    var y1 = Math.min(years, RATE_BREAK), y2 = Math.max(0, years - RATE_BREAK);
+    var senSub = y2 > 0
+      ? yrs(y1) + " × 1% + " + yrs(y2) + " × 0.75% (ריבית דריבית)"
+      : yrs(years) + " × 1% (ריבית דריבית)";
+
+    var rows = $("rows");
+    rows.textContent = "";
+    rows.appendChild(row("שכר בסיס יסוד", null, nis2.format(base)));
+    rows.appendChild(row("מקדם ותק", senSub, "× " + num4.format(r.senFactor)));
+    rows.appendChild(row(
+      "תוספת מתמיד",
+      r.matmid ? "2% החל מ־18 שנות ותק"
+               : "נצברת החל מ־18 שנות ותק — עוד " + yrs(MATMID_YEARS - years),
+      r.matmid ? "× 1.0200" : "—",
+      r.matmid ? "hl" : "off"
+    ));
+    rows.appendChild(row("שכר בסיס מעודכן", "בסיס × " + num4.format(r.totalFactor), nis2.format(r.baseUpdated), "sum"));
+    rows.appendChild(row("תוספת תפקיד", role.name + " · " + num2.format(role.pct * 100) + "%", nis2.format(r.roleAmount)));
+    rows.appendChild(row("שכר משולב", "בסיס + ותק + תפקיד", nis2.format(r.combined), "sum"));
+    rows.appendChild(row("ערך שעה בסיסי", "שכר משולב ÷ " + MONTHLY_STANDARD + " שעות תקן", nis2.format(r.hourly)));
+    rows.appendChild(row("שעות גלגל משמרות", "חודש שנפתח ביום " + day.name, num2.format(day.hours) + " ש׳"));
+    rows.appendChild(row("תוספת גלגל משמרות", "ערך שעה × שעות גלגל", nis2.format(r.wheelAmount)));
+    rows.appendChild(row("סך שכר ברוטו", null, nis2.format(r.gross), "total"));
+
+    var body = $("cmp");
+    body.textContent = "";
+    var min = Math.min.apply(null, DAYS.map(function(d){
+      return calc(base, years, role.pct, d.hours).gross;
+    }));
+
+    DAYS.forEach(function(d, i){
+      var c  = calc(base, years, role.pct, d.hours);
+      var tr = document.createElement("tr");
+      if(i === dayIx) tr.className = "active";
+
+      var td1 = document.createElement("td"); td1.textContent = d.name;
+      var td2 = document.createElement("td"); td2.className = "num"; td2.textContent = num2.format(d.hours);
+      var td3 = document.createElement("td"); td3.className = "num"; td3.textContent = nis0.format(c.wheelAmount);
+
+      var td4  = document.createElement("td"); td4.className = "num";
+      td4.appendChild(document.createTextNode(nis0.format(c.gross)));
+      var diff = c.gross - min;
+      var sp   = document.createElement("div");
+      sp.className   = "delta" + (diff > 0.5 ? " pos" : "");
+      sp.textContent = diff > 0.5 ? "+" + nis0.format(diff) : "המינימום";
+      td4.appendChild(sp);
+
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+      body.appendChild(tr);
+    });
+  }
+
+  /* בחירת חודש קובעת אוטומטית את יום הפתיחה */
+  elMonth.addEventListener("change", function(){
+    var v = elMonth.value;                       // "YYYY-MM"
+    if(!/^\d{4}-\d{2}$/.test(v)) return;
+    var p = v.split("-");
+    elDay.value = new Date(+p[0], +p[1] - 1, 1).getDay();   // 0=ראשון … 6=שבת
+    render();
+  });
+
+  [elBase, elYears, elRole, elDay].forEach(function(el){
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+
+  $("themebtn").addEventListener("click", function(){
+    var dark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+    var cur  = document.documentElement.getAttribute("data-theme") || (dark ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
