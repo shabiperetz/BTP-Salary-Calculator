@@ -46,7 +46,7 @@ if (leftovers) {
   console.error("שגיאה: נותרו תגיות מסמך — " + leftovers.join(", "));
   process.exit(1);
 }
-["<title>", "MONTHLY_STANDARD", "SHIFT_TYPES", "seniorityFactor"].forEach(function(needle){
+["<title>", "MONTHLY_STANDARD", "MONTHLY_AVG_HOURS", "seniorityFactor", "FUND_EMPLOYEE"].forEach(function(needle){
   if (out.indexOf(needle) === -1) {
     console.error("שגיאה: חסר בפלט — " + needle);
     process.exit(1);

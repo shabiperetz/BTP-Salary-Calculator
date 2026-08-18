@@ -62,7 +62,7 @@
 
   label{display:block; font-size:.82rem; font-weight:600; color:var(--muted); margin-bottom:6px}
   .hint{font-weight:400; color:var(--faint); font-size:.76rem}
-  input[type=number],select,input[type=month]{
+  input[type=number],select{
     width:100%; padding:12px 13px; font-size:1rem; font-family:inherit;
     color:var(--text); background:var(--surface-2);
     border:1px solid var(--line); border-radius:11px;
@@ -138,50 +138,11 @@
   .row.sum .vl{font-weight:700}
   .row.hl .vl{color:var(--gold)}
   .row.off{opacity:.45}
-
-  /* ---- הרכב המשמרות ---- */
-  .shift{
-    display:grid; grid-template-columns:1fr auto auto;
-    gap:4px 12px; align-items:baseline;
-    padding:11px 0; border-bottom:1px dashed var(--line);
+  .row.ind .nm{padding-inline-start:14px; position:relative}
+  .row.ind .nm::before{
+    content:""; position:absolute; inset-inline-start:2px; top:.45em;
+    width:5px; height:5px; border-radius:50%; background:var(--accent); opacity:.45;
   }
-  .shift .nm{font-size:.9rem; font-weight:600}
-  .shift .nm small{display:block; color:var(--faint); font-size:.73rem; font-weight:400; margin-top:1px}
-  .shift .hrs{
-    font-variant-numeric:tabular-nums; font-size:.85rem; color:var(--muted);
-    direction:ltr; unicode-bidi:isolate; white-space:nowrap;
-  }
-  .shift .amt{
-    font-variant-numeric:tabular-nums; font-weight:600; font-size:.95rem;
-    direction:ltr; unicode-bidi:isolate; white-space:nowrap; min-width:5.5em; text-align:left;
-  }
-  .shift.zero{opacity:.4}
-  .shift.tot{
-    border-bottom:none; border-top:2px solid var(--accent);
-    margin-top:6px; padding-top:12px;
-  }
-  .shift.tot .nm{font-weight:700}
-  .shift.tot .hrs{color:var(--text); font-weight:600}
-  .shift.tot .amt{font-weight:800; color:var(--accent); font-size:1.05rem}
-  .bar{
-    grid-column:1 / -1; height:5px; border-radius:3px;
-    background:var(--accent); opacity:.28; margin-top:3px;
-  }
-  .shift.tot .bar{display:none}
-
-  .tscroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
-  table{width:100%; border-collapse:collapse; font-size:.87rem; min-width:420px}
-  th,td{padding:10px 12px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap}
-  th{font-size:.72rem; color:var(--muted); font-weight:700; letter-spacing:.03em; background:var(--surface-2)}
-  td.num{font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; text-align:left}
-  td.mix{font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; text-align:left; color:var(--muted); font-size:.8rem}
-  tbody tr:last-child td{border-bottom:none}
-  tr.active{background:var(--accent-soft)}
-  tr.active td{font-weight:700; color:var(--accent)}
-  tr.active td.mix{color:var(--accent)}
-  tr.active td:first-child::before{content:"\25CF  "; font-size:.7em; vertical-align:middle}
-  .delta{font-size:.78rem; color:var(--muted); font-weight:500}
-  .delta.pos{color:var(--gold)}
 
   .note-box{
     background:var(--gold-soft); border:1px solid var(--line);
@@ -227,17 +188,6 @@
         <label for="role">תפקיד</label>
         <select id="role"></select>
       </div>
-
-      <div class="two">
-        <div>
-          <label for="day">יום תחילת החודש</label>
-          <select id="day"></select>
-        </div>
-        <div>
-          <label for="month">בחירת חודש <span class="hint">(אופציונלי)</span></label>
-          <input type="month" id="month">
-        </div>
-      </div>
     </div>
   </div>
 
@@ -271,47 +221,19 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-h">
-      <span>הרכב שעות הגלגל</span>
-      <span class="aside" id="mixAside"></span>
-    </div>
-    <div class="card-b">
-      <div id="mix"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-h">השוואה לפי יום תחילת החודש</div>
-    <div class="tscroll">
-      <table>
-        <thead>
-          <tr>
-            <th>יום</th>
-            <th style="text-align:left">הרכב המשמרות</th>
-            <th style="text-align:left">שעות גלגל</th>
-            <th style="text-align:left">סה&#8221;כ ברוטו</th>
-          </tr>
-        </thead>
-        <tbody id="cmp"></tbody>
-      </table>
-    </div>
-  </div>
-
   <div class="note-box">
     <b>מה הסימולטור לא כולל</b>
     <ul>
       <li>זהו חישוב <b>ברוטו בלבד</b> — ללא מס הכנסה, ביטוח לאומי, מס בריאות והפרשות פנסיה.</li>
-      <li>המודל מניח <b>10 משמרות בחודש</b> ומתעלם מאורך החודש (28/29/30/31 ימים) ומחגים.</li>
+      <li>שעות המשמרת הן <b>ממוצע חודשי קבוע (191 שעות)</b>, שחושב כממוצע שנתי הכולל את חודשי החגים. חודש בודד יכול לסטות ממנו.</li>
       <li>אין רכיבי כוננות, שעות נוספות מעבר לגלגל, ביגוד, הבראה, נסיעות או תוספת משפחה.</li>
-      <li>הפרמיה על שישי ושבת מגולמת בשעות המזוכות לכל משמרת, לא באחוז התעריף.</li>
       <li>קרן ההשתלמות אינה חלק מהברוטו: חלק העובד (2.5%) יורד מהשכר, וחלק המעסיק (7.5%) נוסף מעליו.</li>
     </ul>
   </div>
 
   <footer>
     הערכה בלבד — אינה מהווה תלוש שכר או מסמך מחייב.<br>
-    מודל החישוב: 1% ריבית דריבית לכל שנת ותק, 0.75% משנה 30, ותוספת מתמיד 2% מ־18 שנות ותק.
+    ותק: 1% ריבית דריבית לשנה, 0.75% משנה 30. תוספת מתמיד 2% ותוספת תפקיד — שתיהן על השכר המעודכן.
   </footer>
 </div>
 
@@ -321,9 +243,10 @@
 
   /* ===== קבועים ===== */
   var MONTHLY_STANDARD = 173.3;                          // תקן שעות חודשי במשק
+  var MONTHLY_AVG_HOURS = 191;                           // ממוצע שנתי של שעות משמרת, כולל חודשי חגים
   var MATMID_YEARS = 18, MATMID_RATE = 0.02;             // תוספת מתמיד
   var RATE_1 = 0.01, RATE_2 = 0.0075, RATE_BREAK = 29;   // ותק: 1% עד שנה 29, 0.75% משנה 30
-  var SHIFTS_PER_MONTH = 10;
+  var FUND_EMPLOYEE = 0.025, FUND_EMPLOYER = 0.075;      // קרן השתלמות
 
   var ROLES = [
     { name:"לוחם אש",                  pct:0.00 },
@@ -333,36 +256,7 @@
     { name:"מפקד משמרת",               pct:0.20 }
   ];
 
-  /* קרן השתלמות — מחושבת על השכר המשולב, ללא תוספת הגלגל */
-  var FUND_EMPLOYEE = 0.025, FUND_EMPLOYER = 0.075;
-
-  /* שעות מזוכות לכל סוג משמרת */
-  var SHIFT_TYPES = [
-    { label:"משמרת ראשונה", days:"ימים א׳–ג׳", tag:"אבג", hours:6.97  },
-    { label:"משמרת שנייה",  days:"ימים ד׳–ה׳", tag:"דה",  hours:13.59 },
-    { label:"משמרת שישי",   days:"יום ו׳",     tag:"ו",   hours:20.90 },
-    { label:"משמרת שבת",    days:"יום שבת",    tag:"ש",   hours:46.50 }
-  ];
-
-  /* הרכב 10 המשמרות לפי יום תחילת החודש — [אבג, דה, שישי, שבת] */
-  var DAYS = [
-    { name:"ראשון", counts:[4,3,1,2] },
-    { name:"שני",   counts:[5,3,1,1] },
-    { name:"שלישי", counts:[5,2,2,1] },
-    { name:"רביעי", counts:[5,2,1,2] },
-    { name:"חמישי", counts:[5,3,1,1] },
-    { name:"שישי",  counts:[4,3,2,1] },
-    { name:"שבת",   counts:[4,2,2,2] }
-  ];
-
   function round2(n){ return Math.round(n * 100) / 100; }
-
-  /* סך שעות הגלגל = סכום (מספר משמרות × שעות לסוג) */
-  DAYS.forEach(function(d){
-    d.hours = round2(d.counts.reduce(function(sum, q, i){
-      return sum + q * SHIFT_TYPES[i].hours;
-    }, 0));
-  });
 
   /* ===== עיצוב מספרים ===== */
   var nis0 = new Intl.NumberFormat("he-IL",{style:"currency",currency:"ILS",maximumFractionDigits:0});
@@ -378,26 +272,29 @@
     return Math.pow(1 + RATE_1, a) * Math.pow(1 + RATE_2, b);
   }
 
-  function calc(base, years, rolePct, wheelHours){
+  function calc(base, years, rolePct){
     var senFactor   = seniorityFactor(years);
-    var matmid      = years >= MATMID_YEARS;
-    var totalFactor = senFactor * (matmid ? 1 + MATMID_RATE : 1);
+    var baseUpdated = base * senFactor;              // בסיס + ותק בלבד
 
-    var baseUpdated = base * totalFactor;
-    var roleAmount  = baseUpdated * rolePct;
-    var combined    = baseUpdated + roleAmount;      // שכר משולב
+    /* מתמיד ותפקיד — שתי תוספות מקבילות על אותו בסיס מעודכן, ללא הצטברות ביניהן */
+    var matmid       = years >= MATMID_YEARS;
+    var matmidAmount = matmid ? baseUpdated * MATMID_RATE : 0;
+    var roleAmount   = baseUpdated * rolePct;
+    var combined     = baseUpdated + matmidAmount + roleAmount;   // שכר משולב
+
     var hourly      = combined / MONTHLY_STANDARD;
-    var wheelAmount = hourly * wheelHours;
+    var wheelAmount = hourly * MONTHLY_AVG_HOURS;
 
-    /* קרן השתלמות מחושבת על השכר המשולב בלבד — תוספת הגלגל אינה מבוטחת.
+    /* קרן השתלמות על השכר המשולב בלבד — תוספת המשמרות אינה מבוטחת.
        כל רכיב מעוגל לאגורות והסך נגזר מהם, כדי שהמוצג תמיד יסתכם. */
     var fundEmployee = round2(combined * FUND_EMPLOYEE);
     var fundEmployer = round2(combined * FUND_EMPLOYER);
 
     return {
-      senFactor:senFactor, matmid:matmid, totalFactor:totalFactor,
-      baseUpdated:baseUpdated, roleAmount:roleAmount, combined:combined,
-      hourly:hourly, wheelAmount:wheelAmount, gross:combined + wheelAmount,
+      senFactor:senFactor, baseUpdated:baseUpdated,
+      matmid:matmid, matmidAmount:matmidAmount, roleAmount:roleAmount,
+      combined:combined, hourly:hourly, wheelAmount:wheelAmount,
+      gross:combined + wheelAmount,
       fundEmployee:fundEmployee, fundEmployer:fundEmployer,
       fundTotal:fundEmployee + fundEmployer
     };
@@ -405,8 +302,7 @@
 
   /* ===== DOM ===== */
   function $(id){ return document.getElementById(id); }
-  var elBase = $("base"), elYears = $("years"), elRole = $("role"),
-      elDay  = $("day"),  elMonth = $("month");
+  var elBase = $("base"), elYears = $("years"), elRole = $("role");
 
   ROLES.forEach(function(r, i){
     var o = document.createElement("option");
@@ -414,14 +310,7 @@
     o.textContent = r.name + (r.pct ? "  ·  +" + Math.round(r.pct * 100) + "%" : "");
     elRole.appendChild(o);
   });
-  DAYS.forEach(function(d, i){
-    var o = document.createElement("option");
-    o.value = i;
-    o.textContent = d.name + "  ·  " + num2.format(d.hours) + " ש׳";
-    elDay.appendChild(o);
-  });
   elRole.value = 1;   // סגן מפקד צוות
-  elDay.value  = 6;   // שבת
 
   /* "שנה אחת" / "שנתיים" / "3 שנים" — ריבוי תקין בעברית */
   function yrs(n){
@@ -429,7 +318,6 @@
     if(n === 2) return "שנתיים";
     return n + " שנים";
   }
-  function shiftsWord(n){ return n === 1 ? "משמרת אחת" : n + " משמרות"; }
 
   function row(name, sub, value, cls){
     var d = document.createElement("div");
@@ -443,71 +331,19 @@
     return d;
   }
 
-  /* ===== הרכב שעות הגלגל ===== */
-  function renderMix(day, hourly){
-    var box = $("mix");
-    box.textContent = "";
-    $("mixAside").textContent = shiftsWord(SHIFTS_PER_MONTH) + " · פותח ביום " + day.name;
-
-    var maxHours = Math.max.apply(null, day.counts.map(function(q, i){
-      return q * SHIFT_TYPES[i].hours;
-    }));
-
-    SHIFT_TYPES.forEach(function(t, i){
-      var q = day.counts[i];
-      var h = round2(q * t.hours);
-
-      var el = document.createElement("div");
-      el.className = "shift" + (q === 0 ? " zero" : "");
-
-      var nm = document.createElement("div"); nm.className = "nm";
-      nm.textContent = t.label;
-      var sm = document.createElement("small");
-      sm.textContent = t.days + " · " + num2.format(t.hours) + " שעות למשמרת";
-      nm.appendChild(sm);
-
-      var hrs = document.createElement("div"); hrs.className = "hrs";
-      hrs.textContent = q + " × " + num2.format(t.hours) + " = " + num2.format(h) + " ש׳";
-
-      var amt = document.createElement("div"); amt.className = "amt";
-      amt.textContent = nis0.format(h * hourly);
-
-      var bar = document.createElement("div"); bar.className = "bar";
-      bar.style.width = (maxHours ? (h / maxHours) * 100 : 0) + "%";
-
-      el.appendChild(nm); el.appendChild(hrs); el.appendChild(amt); el.appendChild(bar);
-      box.appendChild(el);
-    });
-
-    var tot = document.createElement("div"); tot.className = "shift tot";
-    var tn = document.createElement("div"); tn.className = "nm"; tn.textContent = "סך הכל";
-    var tsm = document.createElement("small");
-    tsm.textContent = shiftsWord(day.counts.reduce(function(a,b){ return a + b; }, 0));
-    tn.appendChild(tsm);
-    var th = document.createElement("div"); th.className = "hrs";
-    th.textContent = num2.format(day.hours) + " ש׳";
-    var ta = document.createElement("div"); ta.className = "amt";
-    ta.textContent = nis0.format(day.hours * hourly);
-    tot.appendChild(tn); tot.appendChild(th); tot.appendChild(ta);
-    box.appendChild(tot);
-  }
-
   function render(){
     var base  = Math.max(0, parseFloat(elBase.value)  || 0);
     var years = Math.max(0, parseFloat(elYears.value) || 0);
     var role  = ROLES[+elRole.value] || ROLES[0];
-    var dayIx = +elDay.value;
-    var day   = DAYS[dayIx] || DAYS[0];
-    var r     = calc(base, years, role.pct, day.hours);
+    var r     = calc(base, years, role.pct);
 
     $("gross").textContent      = nis0.format(r.gross);
-    $("grossNote").textContent  = role.name + " · " + years + " שנות ותק · חודש שנפתח ביום " + day.name;
+    $("grossNote").textContent  = role.name + " · " + years + " שנות ותק";
     $("chipHourly").textContent = "ערך שעה " + nis2.format(r.hourly);
-    $("chipHours").textContent  = num2.format(day.hours) + " שעות גלגל";
+    $("chipHours").textContent  = MONTHLY_AVG_HOURS + " שעות משמרת בממוצע";
     $("chipYearly").textContent = "שנתי ≈ " + nis0.format(r.gross * 12);
 
-    $("fundBase").textContent = "על בסיס שכר משולב " + nis0.format(r.combined) + " · ללא הגלגל";
-    /* שתי ספרות כדי שהחלקים יסתכמו בדיוק בסך — עיגול לשקלים יוצר סתירה גלויה */
+    $("fundBase").textContent = "על בסיס שכר משולב " + nis0.format(r.combined) + " · ללא המשמרות";
     $("fundEmp").textContent  = nis2.format(r.fundEmployee);
     $("fundEmr").textContent  = nis2.format(r.fundEmployer);
     $("fundTot").textContent  = nis2.format(r.fundTotal);
@@ -517,67 +353,34 @@
       ? yrs(y1) + " × 1% + " + yrs(y2) + " × 0.75% (ריבית דריבית)"
       : yrs(years) + " × 1% (ריבית דריבית)";
 
+    var onUpdated = "על שכר בסיס מעודכן " + nis2.format(r.baseUpdated);
+
     var rows = $("rows");
     rows.textContent = "";
     rows.appendChild(row("שכר בסיס יסוד", null, nis2.format(base)));
     rows.appendChild(row("מקדם ותק", senSub, "× " + num4.format(r.senFactor)));
+    rows.appendChild(row("שכר בסיס מעודכן", "בסיס × מקדם ותק", nis2.format(r.baseUpdated), "sum"));
     rows.appendChild(row(
-      "תוספת מתמיד",
-      r.matmid ? "2% החל מ־18 שנות ותק"
+      "תוספת מתמיד (2%)",
+      r.matmid ? onUpdated
                : "נצברת החל מ־18 שנות ותק — עוד " + yrs(MATMID_YEARS - years),
-      r.matmid ? "× 1.0200" : "—",
-      r.matmid ? "hl" : "off"
+      r.matmid ? nis2.format(r.matmidAmount) : "—",
+      r.matmid ? "ind hl" : "ind off"
     ));
-    rows.appendChild(row("שכר בסיס מעודכן", "בסיס × " + num4.format(r.totalFactor), nis2.format(r.baseUpdated), "sum"));
-    rows.appendChild(row("תוספת תפקיד", role.name + " · " + num2.format(role.pct * 100) + "%", nis2.format(r.roleAmount)));
-    rows.appendChild(row("שכר משולב", "בסיס + ותק + תפקיד", nis2.format(r.combined), "sum"));
+    rows.appendChild(row(
+      "תוספת תפקיד (" + num2.format(role.pct * 100) + "%)",
+      role.pct ? role.name + " · " + onUpdated : role.name + " · ללא תוספת תפקיד",
+      nis2.format(r.roleAmount),
+      role.pct ? "ind" : "ind off"
+    ));
+    rows.appendChild(row("שכר משולב", "מעודכן + מתמיד + תפקיד", nis2.format(r.combined), "sum"));
     rows.appendChild(row("ערך שעה בסיסי", "שכר משולב ÷ " + MONTHLY_STANDARD + " שעות תקן", nis2.format(r.hourly)));
-    rows.appendChild(row("שעות גלגל משמרות", shiftsWord(SHIFTS_PER_MONTH) + " · פותח ביום " + day.name, num2.format(day.hours) + " ש׳"));
-    rows.appendChild(row("תוספת גלגל משמרות", "ערך שעה × שעות גלגל", nis2.format(r.wheelAmount)));
+    rows.appendChild(row("שעות משמרת ממוצע חודשי", "ממוצע שנתי, כולל חודשי חגים", num2.format(MONTHLY_AVG_HOURS) + " ש׳"));
+    rows.appendChild(row("תוספת משמרות", "ערך שעה × שעות ממוצעות", nis2.format(r.wheelAmount)));
     rows.appendChild(row("סך שכר ברוטו", null, nis2.format(r.gross), "total"));
-
-    renderMix(day, r.hourly);
-
-    var body = $("cmp");
-    body.textContent = "";
-    var min = Math.min.apply(null, DAYS.map(function(d){
-      return calc(base, years, role.pct, d.hours).gross;
-    }));
-
-    DAYS.forEach(function(d, i){
-      var c  = calc(base, years, role.pct, d.hours);
-      var tr = document.createElement("tr");
-      if(i === dayIx) tr.className = "active";
-
-      var td1 = document.createElement("td"); td1.textContent = d.name;
-      var td2 = document.createElement("td"); td2.className = "mix";
-      td2.textContent = d.counts.join(" · ");
-      td2.title = SHIFT_TYPES.map(function(t, k){ return t.tag + ":" + d.counts[k]; }).join("  ");
-      var td3 = document.createElement("td"); td3.className = "num"; td3.textContent = num2.format(d.hours);
-
-      var td4  = document.createElement("td"); td4.className = "num";
-      td4.appendChild(document.createTextNode(nis0.format(c.gross)));
-      var diff = c.gross - min;
-      var sp   = document.createElement("div");
-      sp.className   = "delta" + (diff > 0.5 ? " pos" : "");
-      sp.textContent = diff > 0.5 ? "+" + nis0.format(diff) : "המינימום";
-      td4.appendChild(sp);
-
-      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
-      body.appendChild(tr);
-    });
   }
 
-  /* בחירת חודש קובעת אוטומטית את יום הפתיחה */
-  elMonth.addEventListener("change", function(){
-    var v = elMonth.value;                       // "YYYY-MM"
-    if(!/^\d{4}-\d{2}$/.test(v)) return;
-    var p = v.split("-");
-    elDay.value = new Date(+p[0], +p[1] - 1, 1).getDay();   // 0=ראשון … 6=שבת
-    render();
-  });
-
-  [elBase, elYears, elRole, elDay].forEach(function(el){
+  [elBase, elYears, elRole].forEach(function(el){
     el.addEventListener("input", render);
     el.addEventListener("change", render);
   });
