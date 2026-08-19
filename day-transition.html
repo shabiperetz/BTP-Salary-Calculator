@@ -264,6 +264,11 @@
         <input type="number" id="fixed" value="12000" min="0" step="100" inputmode="numeric">
       </div>
 
+      <div id="kdWrap">
+        <label for="kd">תוספת ק.ד <span class="hint">(הסכם 2026 — דור ב' בלבד)</span></label>
+        <select id="kd"></select>
+      </div>
+
       <div>
         <label for="level">רמת התפקיד שאליו עוברים</label>
         <select id="level"></select>
@@ -316,8 +321,11 @@
       <li>האחוזים בטבלה הם <b>שיעור מלוא התוספת</b> — השיעור המלא לזכאי שעמד בתנאי הסף.</li>
       <li>רשימת התפקידים בכל רמה מוצגת <b>כדוגמה בלבד</b>. הרשימה המחייבת היא זו שבנספח ב' להסכם.</li>
       <li>ברמה 4 נכלל גם <b>כל תפקיד שאינו מצוין בנספח ב'</b> המבוצע על ידי כבאי שעבר לעבודת יום עקב פציעה.</li>
+      <li><b>עלייה ברמה מעלה את אחוז השימור בהתאמה.</b> עובד שמתקדם ועובר לרמת תפקיד גבוהה
+          יותר זכאי לשיעור התוספת של אותה רמה.</li>
+      <li><b>שכר קובע לכבאי בט"פ</b> — השכר הקובע במשכורת האחרונה לפני המעבר, הכולל בתוכו את
+          תוספת הפיקוד ואת תוספת המתמיד, ובתנאי שהעובד קיבל אותן במשך שנתיים.</li>
       <li>זהו חישוב <b>ברוטו בלבד</b> — ללא מס הכנסה, ביטוח לאומי, מס בריאות והפרשות פנסיה.</li>
-      <li>קרן ההשתלמות אינה חלק מהברוטו: חלק העובד (2.5%) יורד מהשכר, וחלק המעסיק (7.5%) נוסף מעליו.</li>
     </ul>
   </div>
 
@@ -329,7 +337,7 @@
 
   <footer>
     הערכה בלבד — אינה מהווה תלוש שכר או מסמך מחייב.<br>
-    שכר קובע בעבודת יום = שכר קובע + 40%. תוספת גחלת = שכר קובע בעבודת יום × שיעור התוספת לפי דור ורמה.
+    שכר קובע בעבודת יום = (שכר קובע + תוספת ק.ד) + 40%. תוספת גחלת = שכר קובע בעבודת יום × שיעור התוספת לפי דור ורמה.
   </footer>
 </div>
 
@@ -345,6 +353,12 @@
   var GENS = [
     { key:"b", name:"דור ב'", sub:"דור ביניים" },
     { key:"g", name:"דור ג'", sub:"" }
+  ];
+
+  /* תוספת ק.ד (הסכם 2026) — לדור ב' בלבד. נוספת לשכר הקובע לפני כל שאר החישובים. */
+  var KD = [
+    { amount:450, name:"בד״א במשמרת" },
+    { amount:550, name:"קצין במשמרת" }
   ];
 
   /* שיעור מלוא התוספת ("גחלת"), לפי דור ורמת התפקיד בנספח ב'.
@@ -380,10 +394,11 @@
   var num2 = new Intl.NumberFormat("he-IL",{minimumFractionDigits:2,maximumFractionDigits:2});
 
   /* ===== מנוע החישוב ===== */
-  function calc(fixed, ratePct){
-    var uplift  = fixed * DAY_UPLIFT;
-    var dayBase = fixed + uplift;             // שכר קובע בעבודת יום
-    var gachelet = dayBase * ratePct;         // תוספת "גחלת" — על השכר הקובע בעבודת יום
+  function calc(fixed, kdAmount, ratePct){
+    var fixedTotal = fixed + kdAmount;             // תוספת ק.ד מעלה את השכר הקובע עצמו
+    var uplift     = fixedTotal * DAY_UPLIFT;
+    var dayBase    = fixedTotal + uplift;          // שכר קובע בעבודת יום
+    var gachelet   = dayBase * ratePct;            // תוספת "גחלת" — על השכר הקובע בעבודת יום
 
     /* קרן השתלמות על השכר הקובע בעבודת יום, אחרי ה־40% ולפני הגחלת.
        כל רכיב מעוגל לאגורות והסך נגזר מהם, כדי שהמוצג תמיד יסתכם. */
@@ -391,7 +406,7 @@
     var fundEmployer = round2(dayBase * FUND_EMPLOYER);
 
     return {
-      uplift:uplift, dayBase:dayBase, gachelet:gachelet,
+      fixedTotal:fixedTotal, uplift:uplift, dayBase:dayBase, gachelet:gachelet,
       total:dayBase + gachelet,
       fundEmployee:fundEmployee, fundEmployer:fundEmployer,
       fundTotal:fundEmployee + fundEmployer
@@ -401,8 +416,21 @@
   /* ===== DOM ===== */
   function $(id){ return document.getElementById(id); }
   var elFixed = $("fixed"), elLevel = $("level"), elGen = $("gen");
+  var elKd = $("kd"), elKdWrap = $("kdWrap");
 
   var genKey = "b";
+
+  KD.forEach(function(k, i){
+    var o = document.createElement("option");
+    o.value = i;
+    o.textContent = nis0.format(k.amount) + "  ·  " + k.name;
+    elKd.appendChild(o);
+  });
+
+  /* תוספת ק.ד היא של דור ב' בלבד — לדור ג' השדה נעלם ולא נכנס לחישוב */
+  function syncKd(){
+    elKdWrap.hidden = (genKey !== "b");
+  }
 
   GENS.forEach(function(g){
     var b = document.createElement("button");
@@ -418,6 +446,7 @@
       Array.prototype.forEach.call(elGen.children, function(o){
         o.setAttribute("aria-pressed", o.dataset.key === genKey ? "true" : "false");
       });
+      syncKd();
       fillLevels();
       render();
     });
@@ -454,7 +483,8 @@
     var level = LEVELS[+elLevel.value] || LEVELS[0];
     var gen   = GENS.filter(function(g){ return g.key === genKey; })[0];
     var rate  = level.pct[genKey];
-    var r     = calc(fixed, rate);
+    var kd    = (genKey === "b") ? (KD[+elKd.value] || KD[0]) : null;
+    var r     = calc(fixed, kd ? kd.amount : 0, rate);
     var ratePretty = num2.format(rate * 100) + "%";
 
     $("total").textContent     = nis0.format(r.total);
@@ -481,8 +511,16 @@
     var rows = $("rows");
     rows.textContent = "";
     rows.appendChild(row("שכר קובע", "לפי התלוש", nis2.format(fixed)));
-    rows.appendChild(row("תוספת עבודת יום (40%)", "שכר קובע × 40%", nis2.format(r.uplift), "ind"));
-    rows.appendChild(row("שכר קובע בעבודת יום", "שכר קובע + 40%", nis2.format(r.dayBase), "sum"));
+
+    var upliftBase = "שכר קובע × 40%";
+    if(kd){
+      rows.appendChild(row("תוספת ק.ד (הסכם 2026)", kd.name, nis2.format(kd.amount), "ind hl"));
+      rows.appendChild(row("שכר קובע כולל ק.ד", "שכר קובע + תוספת ק.ד", nis2.format(r.fixedTotal), "sum"));
+      upliftBase = "שכר קובע כולל ק.ד × 40%";
+    }
+
+    rows.appendChild(row("תוספת עבודת יום (40%)", upliftBase, nis2.format(r.uplift), "ind"));
+    rows.appendChild(row("שכר קובע בעבודת יום", (kd ? "שכר קובע כולל ק.ד" : "שכר קובע") + " + 40%", nis2.format(r.dayBase), "sum"));
     rows.appendChild(row(
       "תוספת גחלת (" + ratePretty + ")",
       gen.name + " · " + level.name + " · על השכר הקובע בעבודת יום",
@@ -492,7 +530,7 @@
     rows.appendChild(row("אומדן שכר בעבודת יום", null, nis2.format(r.total), "total"));
   }
 
-  [elFixed, elLevel].forEach(function(el){
+  [elFixed, elLevel, elKd].forEach(function(el){
     el.addEventListener("input", render);
     el.addEventListener("change", render);
   });
@@ -503,6 +541,7 @@
     document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
   });
 
+  syncKd();
   fillLevels();
   elLevel.value = 1;
   render();
