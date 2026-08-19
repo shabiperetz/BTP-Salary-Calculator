@@ -37,6 +37,11 @@ var out = html
   .join("\n")
   .trim();
 
+// בארטיפקט אין קבצים אחיים — הקישור לסימולטור המעבר ליום חייב להיות מוחלט
+var SITE = "https://shabiperetz.github.io/BTP-Salary-Calculator/";
+out = out.replace(/href="day-transition\.html"/g,
+  "href=\"" + SITE + "day-transition.html\" target=\"_blank\" rel=\"noopener\"");
+
 var banner = "<!-- נוצר אוטומטית מ-index.html על ידי build-share.js — אין לערוך ידנית. -->";
 out = out.replace(/(<title>[\s\S]*?<\/title>)/, "$1\n" + banner) + "\n";
 

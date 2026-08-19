@@ -164,6 +164,17 @@
   .note-box b{color:var(--text)}
   .note-box ul{margin:8px 0 0; padding-inline-start:18px}
   .note-box li{margin-bottom:5px}
+
+  /* קישור לסימולטור השני */
+  .switch{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+    box-shadow:var(--shadow); padding:13px 16px; margin:14px 0 0;
+    color:var(--text); text-decoration:none; font-size:.85rem; font-weight:600;
+  }
+  .switch small{display:block; font-weight:400; color:var(--faint); font-size:.74rem; margin-top:2px}
+  .switch .arw{flex:none; color:var(--accent); font-size:1.1rem}
+
   footer{text-align:center; color:var(--faint); font-size:.74rem; margin-top:18px; line-height:1.7}
 
   .themebtn{
@@ -245,6 +256,12 @@
       <li>קרן ההשתלמות אינה חלק מהברוטו: חלק העובד (2.5%) יורד מהשכר, וחלק המעסיק (7.5%) נוסף מעליו.</li>
     </ul>
   </div>
+
+  <a class="switch" href="https://shabiperetz.github.io/BTP-Salary-Calculator/day-transition.html" target="_blank" rel="noopener">
+    <span>מעבר לסימולטור עבודת יום — דור ב׳ / דור ג׳
+      <small>שכר קובע + 40% ותוספת גחלת, לפי רמת התפקיד</small></span>
+    <span class="arw">&#8592;</span>
+  </a>
 
   <footer>
     הערכה בלבד — אינה מהווה תלוש שכר או מסמך מחייב.<br>
